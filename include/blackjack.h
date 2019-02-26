@@ -17,10 +17,12 @@
 
 extern const int DIAMONDS, HEARTS, CLUBS, SPADES;
 
-extern struct Deck;
+typedef struct Deck Deck;
 
-extern Deck deck_new(int);
+extern Deck* deck_new(unsigned int);
 
 extern void deck_shuffle(Deck*);
+
+extern int deck_getNextCard(Deck*);
 
 #endif

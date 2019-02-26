@@ -16,9 +16,11 @@ use std::vec;
 use rand::Rng;
 
 #[no_mangle]
+#[repr(C)]
 pub struct Deck {
 	cards: Vec<i32>,
-	deck_count: i32
+	deck_count: usize,
+	card_index: usize
 }
 
 #[no_mangle]
@@ -34,33 +36,55 @@ pub static CLUBS: i32    = 0b0100_0000;
 pub static SPADES: i32   = 0b1000_0000;
 
 impl Deck {
-	pub fn new(deck_count: i32) -> Deck {
-		let mut cards: Vec<i32> = Vec::with_capacity(52 * deck_count as usize);
-		for suit in vec![DIAMONDS, HEARTS, CLUBS, SPADES] {
-			for card in 1..=13 {
-				cards.push(card | suit);
+	pub fn new(deck_count: usize) -> Deck {
+		let mut cards: Vec<i32> = Vec::with_capacity(52 * deck_count);
+		for _ in 0..=deck_count {
+			for suit in vec![DIAMONDS, HEARTS, CLUBS, SPADES] {
+				for card in 1..=13 {
+					cards.push(card | suit);
+				}
 			}
 		}
-		Deck { cards, deck_count }
+		Deck { cards, deck_count, card_index: 0 }
 	}
 
 	pub fn shuffle(&mut self) {
-		for i in (self.deck_count * 52)..0 {
-			let idx: usize = rand::thread_rng().gen_range(1, i as usize);
+		for i in (1..=self.deck_count * 52).rev() {
+			let idx: usize = rand::thread_rng().gen_range(0, i as usize);
 			let curr = i as usize;
 			let tmp = self.cards[curr];
 			self.cards[curr] = self.cards[idx];
 			self.cards[idx] = tmp;
 		}
+		self.card_index = 0;
+	}
+
+	pub fn next_card(&mut self) -> i32 {
+		let card = self.cards[self.card_index];
+		self.card_index += 1;
+		card
 	}
 }
 
 #[no_mangle]
-pub extern "C" fn deck_new(deck_count: i32) -> Deck {
-	Deck::new(deck_count)
+pub extern "C" fn deck_new(deck_count: usize) -> *mut Deck {
+	Box::into_raw(Box::new(Deck::new(deck_count)))
 }
 
 #[no_mangle]
-pub extern "C" fn deck_shuffle(deck: &mut Deck) {
+pub extern "C" fn deck_shuffle(ptr: *mut Deck) {
+	let deck = unsafe {
+		assert!(!ptr.is_null());
+		&mut *ptr
+	};
 	deck.shuffle();
+}
+
+#[no_mangle]
+pub extern "C" fn deck_getNextCard(ptr: *mut Deck) -> i32 {
+	let deck = unsafe {
+		assert!(!ptr.is_null());
+		&mut *ptr
+	};
+	deck.next_card()
 }
