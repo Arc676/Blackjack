@@ -5,3 +5,8 @@ authors = ["Arc676/Alessandro Vinciguerra <alesvinciguerra@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+rand = "0.3.14"
+
+[lib]
+name = "blackjack"
+path = "src/cards.rs"
