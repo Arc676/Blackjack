@@ -61,6 +61,6 @@ pub extern "C" fn deck_new(deck_count: i32) -> Deck {
 }
 
 #[no_mangle]
-pub extern "C" fn deck_shuffle(mut deck: Deck) {
+pub extern "C" fn deck_shuffle(deck: &mut Deck) {
 	deck.shuffle();
 }
