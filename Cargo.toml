@@ -9,5 +9,5 @@ rand = "0.3.14"
 
 [lib]
 name = "blackjack"
-path = "lib/cards.rs"
+path = "lib/lib.rs"
 crate-type = ["lib", "staticlib"]
