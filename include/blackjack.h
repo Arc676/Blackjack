@@ -15,7 +15,7 @@
 #ifndef BLACKJACK_H
 #define BLACKJACK_H
 
-extern const int DIAMONDS, HEARTS, CLUBS, SPADES;
+extern const int DIAMONDS, HEARTS, CLUBS, SPADES, SUIT, VALUE;
 
 typedef struct Deck Deck;
 

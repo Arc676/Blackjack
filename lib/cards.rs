@@ -35,6 +35,12 @@ pub static CLUBS: i32    = 0b0100_0000;
 #[no_mangle]
 pub static SPADES: i32   = 0b1000_0000;
 
+#[no_mangle]
+pub static SUIT: i32     = 0b1111_0000;
+
+#[no_mangle]
+pub static VALUE: i32    = 0b0000_1111;
+
 impl Deck {
 	pub fn new(deck_count: usize) -> Deck {
 		let mut cards: Vec<i32> = Vec::with_capacity(52 * deck_count);
