@@ -19,8 +19,9 @@ pub mod player {
 	#[no_mangle]
 	pub struct Player {
 		name: String,
-		isDealer: bool,
+		is_dealer: bool,
 		hands: Vec<Hand>,
+		surrendered: bool,
 		balance: i32,
 		standing: i32
 	}
@@ -32,14 +33,23 @@ pub mod player {
 	}
 
 	impl Player {
-		pub fn new(name: String, isDealer: bool, balance: i32) -> Player {
+		pub fn new(name: String, is_dealer: bool, balance: i32) -> Player {
 			Player {
-				name, isDealer, hands: Vec::with_capacity(2), balance, standing: 0
+				name, is_dealer, hands: Vec::with_capacity(2), surrendered: false, balance, standing: 0
 			}
+		}
+
+		pub fn surrender(&mut self) {
+			self.surrendered = true;
+		}
+
+		pub fn has_surrendered(&self) -> bool {
+			self.surrendered
 		}
 
 		pub fn bet(&mut self, wager: i32, deck: &mut Deck) {
 			self.hands.push(Hand::new(wager, deck));
+			self.surrendered = false;
 		}
 
 		pub fn split(&mut self, deck: &mut Deck) -> bool {
@@ -63,6 +73,27 @@ pub mod player {
 				}
 			}
 			false
+		}
+
+		pub fn play_as_dealer(&mut self, deck: &mut Deck) {
+			let mut hand = self.hands[0];
+			while hand.value() < 17 {
+				hand.hit(&mut deck);
+			}
+		}
+
+		pub fn game_over(&mut self, dealer_value: u32) {
+			for hand in self.hands {
+				let value = hand.value();
+				if value > dealer_value {
+					self.standing += hand.get_wager();
+					self.balance += hand.get_wager();
+				} else if value < dealer_value {
+					self.standing -= hand.get_wager();
+					self.balance -= hand.get_wager();
+				}
+			}
+			self.hands.clear();
 		}
 	}
 
@@ -99,6 +130,27 @@ pub mod player {
 				total += card & VALUE;
 			}
 			total > 21
+		}
+
+		pub fn get_wager(&self) -> i32 {
+			self.wager
+		}
+
+		pub fn value(&self) -> u32 {
+			let mut total = 0;
+			let mut aces = 0;
+			for card in self.cards {
+				let value = card.get_value();
+				if value == 1 {
+					aces += 1
+				}
+				total += value;
+			}
+			while total > 21 && aces > 0 {
+				total -= 10;
+				aces -= 1;
+			}
+			total
 		}
 	}
 

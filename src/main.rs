@@ -60,6 +60,9 @@ fn main() {
 		players.push(player);
 	}
 
+	let mut dealer = Player::new(String::from("Dealer"), true, -1);
+	dealer.bet(0, &mut deck);
+
 	for mut player in players {
 		loop {
 			let mut input = String::new();
@@ -71,7 +74,7 @@ fn main() {
 						player.hit(&mut deck);
 					},
 					"stand" => break,
-					"surrender" => break,
+					"surrender" => player.surrender(),
 					"split" => {
 						player.split(&mut deck);
 					},
@@ -83,6 +86,21 @@ fn main() {
 				},
 				Err(_) => println!("Failed to read")
 			}
+		}
+	}
+	let mut dealer_plays = false;
+	for player in players {
+		if !player.has_surrendered() && !player.has_busted() {
+			dealer_plays = true;
+			break;
+		}
+	}
+	if dealer_plays {
+		println!("Dealer's turn");
+		dealer.play_as_dealer(&mut deck);
+		let dealer_value = 0;
+		for mut player in players {
+			player.game_over(dealer_value);
 		}
 	}
 }
