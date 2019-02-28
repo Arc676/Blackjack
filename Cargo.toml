@@ -11,3 +11,7 @@ rand = "0.3.14"
 name = "blackjack"
 path = "lib/lib.rs"
 crate-type = ["lib", "staticlib"]
+
+[[bin]]
+name = "blackjack"
+path = "src/main.rs"
