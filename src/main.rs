@@ -49,8 +49,15 @@ fn main() {
 
 	let player_count = get_int("How many players? ") as usize;
 	let mut players: Vec<Player> = Vec::with_capacity(player_count);
-	for i in 0..player_count {
-		players[i] = Player::new(false, -1);
+	for _ in 0..player_count {
+		let mut name = String::new();
+		print!("Enter your name: ");
+		io::stdout().flush().expect("Failed to flush");
+		io::stdin().read_line(&mut name).expect("Failed to read");
+		let mut player = Player::new(name, false, -1);
+		let bet = get_int("Enter wager for this hand: ");
+		player.bet(bet, &mut deck);
+		players.push(player);
 	}
 
 	for mut player in players {

@@ -18,6 +18,7 @@ pub mod player {
 
 	#[no_mangle]
 	pub struct Player {
+		name: String,
 		isDealer: bool,
 		hands: Vec<Hand>,
 		balance: i32,
@@ -31,9 +32,9 @@ pub mod player {
 	}
 
 	impl Player {
-		pub fn new(isDealer: bool, balance: i32) -> Player {
+		pub fn new(name: String, isDealer: bool, balance: i32) -> Player {
 			Player {
-				isDealer, hands: Vec::with_capacity(2), balance, standing: 0
+				name, isDealer, hands: Vec::with_capacity(2), balance, standing: 0
 			}
 		}
 
@@ -102,8 +103,8 @@ pub mod player {
 	}
 
 	#[no_mangle]
-	pub extern "C" fn player_new(isDealer: bool, balance: i32) -> *mut Player {
-		Box::into_raw(Box::new(Player::new(isDealer, balance)))
+	pub extern "C" fn player_new(name: String, isDealer: bool, balance: i32) -> *mut Player {
+		Box::into_raw(Box::new(Player::new(name, isDealer, balance)))
 	}
 
 	#[no_mangle]
