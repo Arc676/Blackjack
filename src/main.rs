@@ -41,11 +41,22 @@ fn get_int(prompt: &str) -> i32 {
         }
 }
 
+fn print_player_hand(player: &Player) {
+	for (ih, hand) in player.hand_iter().enumerate() {
+		println!("{}'s hand #{}: {} points", player.get_name(), ih + 1, hand.value());
+		for (ic, card) in hand.card_iter().enumerate() {
+			print!("{}{}", match ic { 0 => "", _ => ", " }, card.to_string());
+		}
+		println!("");
+	}
+}
+
 fn main() {
 	println!("Blackjack!");
 
 	let deck_count = get_int("How many decks? ") as usize;
 	let mut deck = Deck::new(deck_count);
+	deck.shuffle();
 
 	let player_count = get_int("How many players? ") as usize;
 	let mut players: Vec<Player> = Vec::with_capacity(player_count);
@@ -54,6 +65,7 @@ fn main() {
 		print!("Enter your name: ");
 		io::stdout().flush().expect("Failed to flush");
 		io::stdin().read_line(&mut name).expect("Failed to read");
+		name.truncate(name.len() - 1);
 		let mut player = Player::new(name, false, -1);
 		let bet = get_int("Enter wager for this hand: ");
 		player.bet(bet, &mut deck);
@@ -64,6 +76,7 @@ fn main() {
 	dealer.bet(0, &mut deck);
 
 	for player in players.iter_mut() {
+		print_player_hand(player);
 		loop {
 			let mut input = String::new();
 			print!("> ");
@@ -71,15 +84,26 @@ fn main() {
 			match io::stdin().read_line(&mut input) {
 				Ok(_) => match input.trim() {
 					"hit" => {
-						player.hit(&mut deck);
+						if player.hit(&mut deck) {
+							break;
+						}
+						print_player_hand(player);
 					},
 					"stand" => break,
-					"surrender" => player.surrender(),
+					"surrender" => {
+						player.surrender();
+						break;
+					},
 					"split" => {
-						player.split(&mut deck);
+						if player.split(&mut deck) {
+							print_player_hand(player);
+						} else {
+							println!("Can't split this hand");
+						}
 					},
 					"double" => {
-						println!("unavailable");
+						player.double(&mut deck);
+						break;
 					},
 					"help" => println!("Commands: hit, stand, surrender, split, double"),
 					_ => println!("Unknown command. Type 'help' for a list of available choices.")
@@ -87,6 +111,7 @@ fn main() {
 				Err(_) => println!("Failed to read")
 			}
 		}
+		print_player_hand(player);
 	}
 	let mut dealer_plays = false;
 	for player in players.iter() {
@@ -98,6 +123,7 @@ fn main() {
 	if dealer_plays {
 		println!("Dealer's turn");
 		dealer.play_as_dealer(&mut deck);
+		print_player_hand(&dealer);
 		let dealer_value = dealer.first_hand_value();
 		for player in players.iter_mut() {
 			player.game_over(dealer_value);

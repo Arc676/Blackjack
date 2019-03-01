@@ -14,6 +14,7 @@
 
 pub mod player {
 	use std::vec;
+	use std::slice::Iter;
 	use crate::card::card::*;
 
 	#[no_mangle]
@@ -37,6 +38,14 @@ pub mod player {
 			Player {
 				name, is_dealer, hands: Vec::with_capacity(2), surrendered: false, balance, standing: 0
 			}
+		}
+
+		pub fn hand_iter(&self) -> Iter<Hand> {
+			self.hands.iter()
+		}
+
+		pub fn get_name(&self) -> &str {
+			&*self.name
 		}
 
 		pub fn first_hand_value(&self) -> u32 {
@@ -67,6 +76,11 @@ pub mod player {
 				}
 			}
 			false
+		}
+
+		pub fn double(&mut self, deck: &mut Deck) -> bool {
+			self.hands[0].double_wager();
+			self.hit(deck)
 		}
 
 		pub fn hit(&mut self, deck: &mut Deck) -> bool {
@@ -113,6 +127,10 @@ pub mod player {
 			hand
 		}
 
+		pub fn card_iter(&self) -> Iter<Card> {
+			self.cards.iter()
+		}
+
 		pub fn split(&mut self, deck: &mut Deck) -> Option<Hand> {
 			if self.cards.len() == 2 {
 				if self.cards[0].value == self.cards[1].value {
@@ -126,6 +144,10 @@ pub mod player {
 			None
 		}
 
+		pub fn double_wager(&mut self) {
+			self.wager *= 2;
+		}
+
 		pub fn hit(&mut self, deck: &mut Deck) -> bool {
 			self.cards.push(deck.next_card());
 			self.busted()
@@ -134,7 +156,7 @@ pub mod player {
 		pub fn busted(&self) -> bool {
 			let mut total = 0;
 			for card in &self.cards {
-				total += card.value;
+				total += card.score();
 			}
 			total > 21
 		}
@@ -147,7 +169,7 @@ pub mod player {
 			let mut total: u32 = 0;
 			let mut aces = 0;
 			for card in &self.cards {
-				let value = card.value;
+				let value = card.score();
 				if value == 1 {
 					aces += 1
 				}

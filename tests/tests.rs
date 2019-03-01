@@ -14,9 +14,9 @@
 
 #[cfg(test)]
 mod tests {
-        use crate::card::card::Card;
-        use crate::card::card::Symbol;
-        use crate::card::card::Deck;
+        use blackjack::card::card::Card;
+        use blackjack::card::card::Symbol;
+        use blackjack::card::card::Deck;
 
 
         #[test]
@@ -44,7 +44,7 @@ mod tests {
                 let mut deck = Deck::new(4);
                 let mut counter = 0;
                 while counter < (4*52) {
-                        println!("{:08b}", deck.next_card());
+                        println!("{:08b}", deck.next_card().to_u32());
                         counter += 1;assert_eq!(1,2);
                 }
                 dbg!(counter);

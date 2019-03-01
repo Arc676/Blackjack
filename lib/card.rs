@@ -130,6 +130,13 @@ pub mod card {
 			format!("{} of {}", self.value_to_string(), self.symbol.name())
 		}
 
+		pub fn score(&self) -> u32 {
+			match self.value {
+				11..=13 => 10,
+				value => value
+			}
+		}
+
 		fn value_to_string(&self) -> &str {
 			match self.value {
 				1 => "Ace",
