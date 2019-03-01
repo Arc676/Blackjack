@@ -63,7 +63,7 @@ fn main() {
 	let mut dealer = Player::new(String::from("Dealer"), true, -1);
 	dealer.bet(0, &mut deck);
 
-	for mut player in players {
+	for player in players.iter_mut() {
 		loop {
 			let mut input = String::new();
 			print!("> ");
@@ -89,7 +89,7 @@ fn main() {
 		}
 	}
 	let mut dealer_plays = false;
-	for player in players {
+	for player in players.iter() {
 		if !player.has_surrendered() && !player.has_busted() {
 			dealer_plays = true;
 			break;
@@ -98,8 +98,8 @@ fn main() {
 	if dealer_plays {
 		println!("Dealer's turn");
 		dealer.play_as_dealer(&mut deck);
-		let dealer_value = 0;
-		for mut player in players {
+		let dealer_value = dealer.first_hand_value();
+		for player in players.iter_mut() {
 			player.game_over(dealer_value);
 		}
 	}

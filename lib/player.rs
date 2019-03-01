@@ -28,7 +28,7 @@ pub mod player {
 
 	#[no_mangle]
 	pub struct Hand {
-		cards: Vec<i32>,
+		cards: Vec<Card>,
 		wager: i32
 	}
 
@@ -37,6 +37,13 @@ pub mod player {
 			Player {
 				name, is_dealer, hands: Vec::with_capacity(2), surrendered: false, balance, standing: 0
 			}
+		}
+
+		pub fn first_hand_value(&self) -> u32 {
+			if self.surrendered || self.has_busted() {
+				return 0
+			}
+			self.hands[0].value()
 		}
 
 		pub fn surrender(&mut self) {
@@ -53,7 +60,7 @@ pub mod player {
 		}
 
 		pub fn split(&mut self, deck: &mut Deck) -> bool {
-			for mut hand in &mut self.hands {
+			for hand in &mut self.hands {
 				if let Some(newhand) = hand.split(deck) {
 					self.hands.push(newhand);
 					return true;
@@ -75,15 +82,15 @@ pub mod player {
 			false
 		}
 
-		pub fn play_as_dealer(&mut self, deck: &mut Deck) {
-			let mut hand = self.hands[0];
+		pub fn play_as_dealer(&mut self, mut deck: &mut Deck) {
+			let hand = &mut self.hands[0];
 			while hand.value() < 17 {
 				hand.hit(&mut deck);
 			}
 		}
 
 		pub fn game_over(&mut self, dealer_value: u32) {
-			for hand in self.hands {
+			for hand in &self.hands {
 				let value = hand.value();
 				if value > dealer_value {
 					self.standing += hand.get_wager();
@@ -108,7 +115,7 @@ pub mod player {
 
 		pub fn split(&mut self, deck: &mut Deck) -> Option<Hand> {
 			if self.cards.len() == 2 {
-				if (self.cards[0] & VALUE) == (self.cards[1] & VALUE) {
+				if self.cards[0].value == self.cards[1].value {
 					let card = self.cards[1];
 					self.cards[1] = deck.next_card();
 					return Some(Hand {
@@ -127,7 +134,7 @@ pub mod player {
 		pub fn busted(&self) -> bool {
 			let mut total = 0;
 			for card in &self.cards {
-				total += card & VALUE;
+				total += card.value;
 			}
 			total > 21
 		}
@@ -137,10 +144,10 @@ pub mod player {
 		}
 
 		pub fn value(&self) -> u32 {
-			let mut total = 0;
+			let mut total: u32 = 0;
 			let mut aces = 0;
-			for card in self.cards {
-				let value = card.get_value();
+			for card in &self.cards {
+				let value = card.value;
 				if value == 1 {
 					aces += 1
 				}
