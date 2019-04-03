@@ -132,6 +132,7 @@ pub mod card {
 
 		pub fn score(&self) -> u32 {
 			match self.value {
+				1 => 11,
 				11..=13 => 10,
 				value => value
 			}

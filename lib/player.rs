@@ -40,6 +40,15 @@ pub mod player {
 			}
 		}
 
+		fn win(&mut self, amt: i32) {
+			self.balance += amt;
+			self.standing += amt;
+		}
+
+		fn lose(&mut self, amt: i32) {
+			self.win(-amt);
+		}
+
 		pub fn hand_iter(&self) -> Iter<Hand> {
 			self.hands.iter()
 		}
@@ -48,15 +57,25 @@ pub mod player {
 			&*self.name
 		}
 
+		pub fn get_balance(&self) -> i32 {
+			self.balance
+		}
+
+		pub fn get_standing(&self) -> i32 {
+			self.standing
+		}
+
 		pub fn first_hand_value(&self) -> u32 {
 			if self.surrendered || self.has_busted() {
 				return 0
 			}
-			self.hands[0].value()
+			self.hands[0].value(false)
 		}
 
 		pub fn surrender(&mut self) {
 			self.surrendered = true;
+			self.lose(self.hands[0].get_wager() / 2);
+			self.hands.remove(0);
 		}
 
 		pub fn has_surrendered(&self) -> bool {
@@ -96,24 +115,29 @@ pub mod player {
 			false
 		}
 
+		pub fn hand_is_soft(&self) -> bool {
+			self.hands[0].is_soft()
+		}
+
 		pub fn play_as_dealer(&mut self, mut deck: &mut Deck) {
 			let hand = &mut self.hands[0];
-			while hand.value() < 17 {
+			while hand.value(false) < 17 {
 				hand.hit(&mut deck);
 			}
 		}
 
 		pub fn game_over(&mut self, dealer_value: u32) {
-			for hand in &self.hands {
-				let value = hand.value();
-				if value > dealer_value {
-					self.standing += hand.get_wager();
-					self.balance += hand.get_wager();
+			let mut total_delta: i32 = 0;
+			for hand in &mut self.hands {
+				let value = hand.value(false);
+				let wager = hand.get_wager();
+				if value > dealer_value && !(self.surrendered || hand.busted()) {
+					total_delta += wager;
 				} else if value < dealer_value {
-					self.standing -= hand.get_wager();
-					self.balance -= hand.get_wager();
+					total_delta -= wager;
 				}
 			}
+			self.win(total_delta);
 			self.hands.clear();
 		}
 	}
@@ -154,23 +178,19 @@ pub mod player {
 		}
 
 		pub fn busted(&self) -> bool {
-			let mut total = 0;
-			for card in &self.cards {
-				total += card.score();
-			}
-			total > 21
+			self.value(false) > 21
 		}
 
 		pub fn get_wager(&self) -> i32 {
 			self.wager
 		}
 
-		pub fn value(&self) -> u32 {
+		pub fn value(&self, get_aces: bool) -> u32 {
 			let mut total: u32 = 0;
-			let mut aces = 0;
+			let mut aces: u32 = 0;
 			for card in &self.cards {
 				let value = card.score();
-				if value == 1 {
+				if value == 11 {
 					aces += 1
 				}
 				total += value;
@@ -179,7 +199,14 @@ pub mod player {
 				total -= 10;
 				aces -= 1;
 			}
-			total
+			match get_aces {
+				true => aces,
+				false => total
+			}
+		}
+
+		pub fn is_soft(&self) -> bool {
+			self.value(true) > 0
 		}
 	}
 
