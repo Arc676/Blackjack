@@ -43,7 +43,7 @@ fn get_int(prompt: &str) -> i32 {
 
 fn print_player_hand(player: &Player) {
 	for (ih, hand) in player.hand_iter().enumerate() {
-		println!("{}'s hand #{}: {} points", player.get_name(), ih + 1, hand.value());
+		println!("{}'s hand #{}: {} points", player.get_name(), ih + 1, hand.value(false));
 		for (ic, card) in hand.card_iter().enumerate() {
 			print!("{}{}", match ic { 0 => "", _ => ", " }, card.to_string());
 		}
@@ -66,67 +66,91 @@ fn main() {
 		io::stdout().flush().expect("Failed to flush");
 		io::stdin().read_line(&mut name).expect("Failed to read");
 		name.truncate(name.len() - 1);
-		let mut player = Player::new(name, false, -1);
-		let bet = get_int("Enter wager for this hand: ");
-		player.bet(bet, &mut deck);
+		let initial_standing = get_int("Enter player's initial standing: ");
+		let player = Player::new(name, false, initial_standing);
 		players.push(player);
 	}
 
 	let mut dealer = Player::new(String::from("Dealer"), true, -1);
-	dealer.bet(0, &mut deck);
 
-	for player in players.iter_mut() {
-		print_player_hand(player);
-		loop {
-			let mut input = String::new();
-			print!("> ");
-			io::stdout().flush().expect("Failed to flush");
-			match io::stdin().read_line(&mut input) {
-				Ok(_) => match input.trim() {
-					"hit" => {
-						if player.hit(&mut deck) {
-							break;
-						}
-						print_player_hand(player);
-					},
-					"stand" => break,
-					"surrender" => {
-						player.surrender();
-						break;
-					},
-					"split" => {
-						if player.split(&mut deck) {
+	loop {
+		for player in players.iter_mut() {
+			let bet = get_int(&format!("{}: Enter wager for this hand: ", player.get_name()));
+			player.bet(bet, &mut deck);
+		}
+		dealer.bet(0, &mut deck);
+
+		for player in players.iter_mut() {
+			print_player_hand(player);
+			loop {
+				let mut input = String::new();
+				print!("> ");
+				io::stdout().flush().expect("Failed to flush");
+				match io::stdin().read_line(&mut input) {
+					Ok(_) => match input.trim() {
+						"hit" => {
+							if player.hit(&mut deck) {
+								break;
+							}
 							print_player_hand(player);
-						} else {
-							println!("Can't split this hand");
-						}
+						},
+						"stand" => break,
+						"surrender" => {
+							player.surrender();
+							break;
+						},
+						"split" => {
+							if player.split(&mut deck) {
+								print_player_hand(player);
+							} else {
+								println!("Can't split this hand");
+							}
+						},
+						"double" => {
+							player.double(&mut deck);
+							break;
+						},
+						"help" => println!("Commands: hit, stand, surrender, split, double"),
+						_ => println!("Unknown command. Type 'help' for a list of available choices.")
 					},
-					"double" => {
-						player.double(&mut deck);
-						break;
-					},
-					"help" => println!("Commands: hit, stand, surrender, split, double"),
-					_ => println!("Unknown command. Type 'help' for a list of available choices.")
-				},
-				Err(_) => println!("Failed to read")
+					Err(_) => println!("Failed to read")
+				}
+			}
+			print_player_hand(player);
+		}
+		let mut dealer_plays = false;
+		for player in players.iter() {
+			if !player.has_surrendered() && !player.has_busted() {
+				dealer_plays = true;
+				break;
 			}
 		}
-		print_player_hand(player);
-	}
-	let mut dealer_plays = false;
-	for player in players.iter() {
-		if !player.has_surrendered() && !player.has_busted() {
-			dealer_plays = true;
-			break;
-		}
-	}
-	if dealer_plays {
-		println!("Dealer's turn");
-		dealer.play_as_dealer(&mut deck);
-		print_player_hand(&dealer);
-		let dealer_value = dealer.first_hand_value();
+		let dealer_value = match dealer_plays {
+			true => {
+				println!("Dealer's turn");
+				dealer.play_as_dealer(&mut deck);
+				print_player_hand(&dealer);
+				match dealer.has_busted() {
+					true => 0,
+					false => dealer.first_hand_value()
+				}
+			},
+			false => 0
+		};
 		for player in players.iter_mut() {
 			player.game_over(dealer_value);
+			println!("{}'s balance, standing: {}/{}", player.get_name(), player.get_balance(), player.get_standing());
 		}
+		dealer.game_over(0);
+		let mut input = String::new();
+		print!("Play again? [Y/n]: ");
+		io::stdout().flush().expect("Failed to flush");
+		match io::stdin().read_line(&mut input) {
+			Ok(_) => match input.trim() {
+				"n" | "N" => break,
+				_ => ()
+			},
+			Err(_) => println!("Failed to read")
+		};
 	}
 }

@@ -127,13 +127,18 @@ pub mod player {
 		}
 
 		pub fn game_over(&mut self, dealer_value: u32) {
+			if self.is_dealer {
+				self.hands.clear();
+				return;
+			}
 			let mut total_delta: i32 = 0;
 			for hand in &mut self.hands {
 				let value = hand.value(false);
 				let wager = hand.get_wager();
-				if value > dealer_value && !(self.surrendered || hand.busted()) {
+				let lost = self.surrendered || hand.busted();
+				if value > dealer_value && !lost {
 					total_delta += wager;
-				} else if value < dealer_value {
+				} else if value < dealer_value || lost {
 					total_delta -= wager;
 				}
 			}
