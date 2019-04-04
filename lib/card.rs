@@ -95,6 +95,11 @@ pub mod card {
 			card
 
 		}
+
+		pub fn reset(&mut self) {
+			self.card_index = 0;
+			self.shuffle();
+		}
 	}
 
 	impl Symbol {

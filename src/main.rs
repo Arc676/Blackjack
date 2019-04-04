@@ -63,7 +63,6 @@ fn main() {
 
 	let deck_count = get_int("How many decks? ") as usize;
 	let mut deck = Deck::new(deck_count);
-	deck.shuffle();
 
 	let player_count = get_int("How many players? ") as usize;
 	let mut players: Vec<Player> = Vec::with_capacity(player_count);
@@ -81,6 +80,7 @@ fn main() {
 	let mut dealer = Player::new(String::from("Dealer"), true, -1);
 
 	loop {
+		deck.reset();
 		for player in players.iter_mut() {
 			let bet = get_int(&format!("{}: Enter wager for this hand: ", player.get_name()));
 			player.bet(bet, &mut deck);
@@ -100,7 +100,12 @@ fn main() {
 								print_player_hand(player);
 							}
 						},
-						"stand" => player.stand(),
+						"stand" => {
+							player.stand();
+							if player.is_playing() {
+								print_player_hand(player);
+							}
+						},
 						"surrender" => {
 							player.surrender();
 						},

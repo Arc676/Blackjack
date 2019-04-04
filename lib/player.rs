@@ -114,20 +114,17 @@ pub mod player {
 		}
 
 		pub fn split(&mut self, deck: &mut Deck) -> bool {
-			for hand in &mut self.hands {
-				if let Some(newhand) = hand.split(deck) {
+			match self.get_playing_hand_mut().split(deck) {
+				Some(newhand) => {
 					self.hands.push(newhand);
-					return true;
-				}
+					true
+				},
+				None => false
 			}
-			false
 		}
 
 		pub fn double(&mut self, deck: &mut Deck) -> bool {
-			self.get_playing_hand_mut().double_wager();
-			let busted = self.hit(deck);
-			self.get_playing_hand_mut().set();
-			busted
+			self.get_playing_hand_mut().double_wager(deck)
 		}
 
 		pub fn hit(&mut self, deck: &mut Deck) -> bool {
@@ -219,7 +216,7 @@ pub mod player {
 
 		pub fn split(&mut self, deck: &mut Deck) -> Option<Hand> {
 			if self.cards.len() == 2 {
-				if self.cards[0].value == self.cards[1].value {
+				if self.cards[0].score() == self.cards[1].score() {
 					let card = self.cards[1];
 					self.cards[1] = deck.next_card();
 					return Some(Hand {
@@ -230,8 +227,10 @@ pub mod player {
 			None
 		}
 
-		pub fn double_wager(&mut self) {
+		pub fn double_wager(&mut self, deck: &mut Deck) -> bool {
 			self.wager *= 2;
+			self.is_set = true;
+			self.hit(deck)
 		}
 
 		pub fn hit(&mut self, deck: &mut Deck) -> bool {
