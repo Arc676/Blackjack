@@ -22,7 +22,6 @@ pub mod player {
 		name: String,
 		is_dealer: bool,
 		hands: Vec<Hand>,
-		surrendered: bool,
 		balance: i32,
 		standing: i32
 	}
@@ -30,13 +29,15 @@ pub mod player {
 	#[no_mangle]
 	pub struct Hand {
 		cards: Vec<Card>,
+		surrendered: bool,
+		is_set: bool,
 		wager: i32
 	}
 
 	impl Player {
 		pub fn new(name: String, is_dealer: bool, balance: i32) -> Player {
 			Player {
-				name, is_dealer, hands: Vec::with_capacity(2), surrendered: false, balance, standing: 0
+				name, is_dealer, hands: Vec::with_capacity(2), balance, standing: 0
 			}
 		}
 
@@ -65,26 +66,51 @@ pub mod player {
 			self.standing
 		}
 
+		fn get_playing_hand(&self) -> &Hand {
+			for hand in &self.hands {
+				if !hand.get_is_set() {
+					return hand;
+				}
+			}
+			panic!("Player has no hands");
+		}
+
+		fn get_playing_hand_mut(&mut self) -> &mut Hand {
+			for hand in &mut self.hands {
+				if !hand.get_is_set() {
+					return hand;
+				}
+			}
+			panic!("Player has no hands");
+		}
+
 		pub fn first_hand_value(&self) -> u32 {
-			if self.surrendered || self.has_busted() {
+			if self.has_busted() {
 				return 0
 			}
 			self.hands[0].value(false)
 		}
 
 		pub fn surrender(&mut self) {
-			self.surrendered = true;
-			self.lose(self.hands[0].get_wager() / 2);
-			self.hands.remove(0);
+			self.get_playing_hand_mut().surrender();
+			self.lose(self.get_playing_hand().get_wager() / 2);
 		}
 
-		pub fn has_surrendered(&self) -> bool {
-			self.surrendered
+		pub fn has_lost(&self) -> bool {
+			for hand in &self.hands {
+				if !hand.lost() {
+					return false;
+				}
+			}
+			true
+		}
+
+		pub fn stand(&mut self) {
+			self.get_playing_hand_mut().set();
 		}
 
 		pub fn bet(&mut self, wager: i32, deck: &mut Deck) {
 			self.hands.push(Hand::new(wager, deck));
-			self.surrendered = false;
 		}
 
 		pub fn split(&mut self, deck: &mut Deck) -> bool {
@@ -98,12 +124,19 @@ pub mod player {
 		}
 
 		pub fn double(&mut self, deck: &mut Deck) -> bool {
-			self.hands[0].double_wager();
-			self.hit(deck)
+			self.get_playing_hand_mut().double_wager();
+			let busted = self.hit(deck);
+			self.get_playing_hand_mut().set();
+			busted
 		}
 
 		pub fn hit(&mut self, deck: &mut Deck) -> bool {
-			self.hands[0].hit(deck)
+			let hand = self.get_playing_hand_mut();
+			let busted = hand.hit(deck);
+			if busted {
+				hand.set();
+			}
+			busted
 		}
 
 		pub fn has_busted(&self) -> bool {
@@ -116,7 +149,7 @@ pub mod player {
 		}
 
 		pub fn hand_is_soft(&self) -> bool {
-			self.hands[0].is_soft()
+			self.get_playing_hand().is_soft()
 		}
 
 		pub fn play_as_dealer(&mut self, mut deck: &mut Deck) {
@@ -124,6 +157,15 @@ pub mod player {
 			while hand.value(false) < 17 {
 				hand.hit(&mut deck);
 			}
+		}
+
+		pub fn is_playing(&self) -> bool {
+			for hand in &self.hands {
+				if !hand.get_is_set() {
+					return true;
+				}
+			}
+			false
 		}
 
 		pub fn game_over(&mut self, dealer_value: u32) {
@@ -135,10 +177,9 @@ pub mod player {
 			for hand in &mut self.hands {
 				let value = hand.value(false);
 				let wager = hand.get_wager();
-				let lost = self.surrendered || hand.busted();
-				if value > dealer_value && !lost {
+				if value > dealer_value && !hand.lost() {
 					total_delta += wager;
-				} else if value < dealer_value || lost {
+				} else if value < dealer_value || hand.lost() {
 					total_delta -= wager;
 				}
 			}
@@ -149,7 +190,7 @@ pub mod player {
 
 	impl Hand {
 		pub fn new(wager: i32, deck: &mut Deck) -> Hand {
-			let mut hand = Hand { cards: Vec::with_capacity(11), wager };
+			let mut hand = Hand { cards: Vec::with_capacity(11), surrendered: false, is_set: false, wager };
 			for _ in 0..2 {
 				hand.cards.push(deck.next_card())
 			}
@@ -160,13 +201,29 @@ pub mod player {
 			self.cards.iter()
 		}
 
+		pub fn set(&mut self) {
+			self.is_set = true;
+		}
+
+		pub fn get_is_set(&self) -> bool {
+			self.is_set
+		}
+
+		pub fn surrender(&mut self) {
+			self.surrendered = true;
+		}
+
+		pub fn lost(&self) -> bool {
+			self.surrendered || self.busted()
+		}
+
 		pub fn split(&mut self, deck: &mut Deck) -> Option<Hand> {
 			if self.cards.len() == 2 {
 				if self.cards[0].value == self.cards[1].value {
 					let card = self.cards[1];
 					self.cards[1] = deck.next_card();
 					return Some(Hand {
-						cards: vec![card, deck.next_card()], wager: self.wager
+						cards: vec![card, deck.next_card()], surrendered: false, is_set: false, wager: self.wager
 					});
 				}
 			}

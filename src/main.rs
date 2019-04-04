@@ -43,7 +43,14 @@ fn get_int(prompt: &str) -> i32 {
 
 fn print_player_hand(player: &Player) {
 	for (ih, hand) in player.hand_iter().enumerate() {
-		println!("{}'s hand #{}: {} points", player.get_name(), ih + 1, hand.value(false));
+		println!("{}'s hand #{} ({}): {} points",
+			player.get_name(),
+			ih + 1,
+			match hand.get_is_set() {
+				true => "set",
+				false => "playing"
+			},
+			hand.value(false));
 		for (ic, card) in hand.card_iter().enumerate() {
 			print!("{}{}", match ic { 0 => "", _ => ", " }, card.to_string());
 		}
@@ -66,8 +73,8 @@ fn main() {
 		io::stdout().flush().expect("Failed to flush");
 		io::stdin().read_line(&mut name).expect("Failed to read");
 		name.truncate(name.len() - 1);
-		let initial_standing = get_int("Enter player's initial standing: ");
-		let player = Player::new(name, false, initial_standing);
+		let initial_balance = get_int("Enter player's initial balance: ");
+		let player = Player::new(name, false, initial_balance);
 		players.push(player);
 	}
 
@@ -82,22 +89,20 @@ fn main() {
 
 		for player in players.iter_mut() {
 			print_player_hand(player);
-			loop {
+			while player.is_playing() {
 				let mut input = String::new();
 				print!("> ");
 				io::stdout().flush().expect("Failed to flush");
 				match io::stdin().read_line(&mut input) {
 					Ok(_) => match input.trim() {
 						"hit" => {
-							if player.hit(&mut deck) {
-								break;
+							if !player.hit(&mut deck) {
+								print_player_hand(player);
 							}
-							print_player_hand(player);
 						},
-						"stand" => break,
+						"stand" => player.stand(),
 						"surrender" => {
 							player.surrender();
-							break;
 						},
 						"split" => {
 							if player.split(&mut deck) {
@@ -108,7 +113,6 @@ fn main() {
 						},
 						"double" => {
 							player.double(&mut deck);
-							break;
 						},
 						"help" => println!("Commands: hit, stand, surrender, split, double"),
 						_ => println!("Unknown command. Type 'help' for a list of available choices.")
@@ -120,7 +124,7 @@ fn main() {
 		}
 		let mut dealer_plays = false;
 		for player in players.iter() {
-			if !player.has_surrendered() && !player.has_busted() {
+			if !player.has_lost() {
 				dealer_plays = true;
 				break;
 			}
