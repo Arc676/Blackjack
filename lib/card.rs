@@ -162,27 +162,4 @@ pub mod card {
 			}
 		}
 	}
-
-	#[no_mangle]
-	pub extern "C" fn deck_new(deck_count: usize) -> *mut Deck {
-		Box::into_raw(Box::new(Deck::new(deck_count)))
-	}
-
-	#[no_mangle]
-	pub extern "C" fn deck_shuffle(ptr: *mut Deck) {
-		let deck = unsafe {
-			assert!(!ptr.is_null());
-			&mut *ptr
-		};
-		deck.shuffle();
-	}
-
-	#[no_mangle]
-	pub extern "C" fn deck_getNextCard(ptr: *mut Deck) -> u32 {
-		let deck = unsafe {
-			assert!(!ptr.is_null());
-			&mut *ptr
-		};
-		deck.next_card().to_u32()
-	}
 }

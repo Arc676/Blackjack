@@ -274,20 +274,4 @@ pub mod player {
 			self.value(true) > 0
 		}
 	}
-
-	#[no_mangle]
-	pub extern "C" fn player_new(name: String, isDealer: bool, balance: i32) -> *mut Player {
-		Box::into_raw(Box::new(Player::new(name, isDealer, balance)))
-	}
-
-	#[no_mangle]
-	pub extern "C" fn player_isDealer(player: *mut Player) -> bool {
-		false
-	}
-
-	#[no_mangle]
-	pub extern "C" fn player_getBalance(player: *const Player) -> i32 { 0 }
-
-	#[no_mangle]
-	pub extern "C" fn player_getStanding(player: *const Player) -> i32 { 0 }
 }

@@ -17,11 +17,44 @@
 
 extern const int DIAMONDS, HEARTS, CLUBS, SPADES, SUIT, VALUE;
 
+extern void rust_free(char*);
+
+typedef struct Player Player;
 typedef struct Deck Deck;
+
+extern Player* player_new(char*, int, int);
+
+extern char* player_getName(Player*);
+
+extern int player_getBalance(Player*);
+
+extern int player_getStanding(Player*);
+
+extern int player_isPlaying(Player*);
+
+extern int player_hit(Player*, Deck*);
+
+extern void player_stand(Player*);
+
+extern void player_surrender(Player*);
+
+extern int player_split(Player*, Deck*);
+
+extern void player_double(Player*, Deck*);
+
+extern void player_bet(Player*, int, Deck*);
+
+extern int player_hasLost(Player*);
+
+extern void player_gameOver(Player*, unsigned int);
+
+extern unsigned int player_playAsDealer(Player*, Deck*);
 
 extern Deck* deck_new(unsigned int);
 
 extern void deck_shuffle(Deck*);
+
+extern void deck_reset(Deck*);
 
 extern int deck_getNextCard(Deck*);
 
