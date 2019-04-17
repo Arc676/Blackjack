@@ -137,12 +137,9 @@ fn main() {
 		let dealer_value = match dealer_plays {
 			true => {
 				println!("Dealer's turn");
-				dealer.play_as_dealer(&mut deck);
+				let value = dealer.play_as_dealer(&mut deck);
 				print_player_hand(&dealer);
-				match dealer.has_busted() {
-					true => 0,
-					false => dealer.first_hand_value()
-				}
+				value
 			},
 			false => 0
 		};

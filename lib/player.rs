@@ -149,10 +149,14 @@ pub mod player {
 			self.get_playing_hand().is_soft()
 		}
 
-		pub fn play_as_dealer(&mut self, mut deck: &mut Deck) {
+		pub fn play_as_dealer(&mut self, mut deck: &mut Deck) -> u32 {
 			let hand = &mut self.hands[0];
 			while hand.value(false) < 17 {
 				hand.hit(&mut deck);
+			}
+			match self.has_busted() {
+				true => 0,
+				false => self.first_hand_value()
 			}
 		}
 
