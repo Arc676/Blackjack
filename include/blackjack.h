@@ -20,7 +20,9 @@ extern const int DIAMONDS, HEARTS, CLUBS, SPADES, SUIT, VALUE;
 extern void rust_free(char*);
 
 typedef struct Player Player;
+typedef struct Hand Hand;
 typedef struct Deck Deck;
+typedef struct Card Card;
 
 extern Player* player_new(char*, int, int);
 
@@ -49,6 +51,20 @@ extern int player_hasLost(Player*);
 extern void player_gameOver(Player*, unsigned int);
 
 extern unsigned int player_playAsDealer(Player*, Deck*);
+
+extern unsigned int player_handCount(Player*);
+
+extern Hand* player_getHandWithIndex(Player*, unsigned int);
+
+extern unsigned int hand_cardCount(Hand*);
+
+extern Card* hand_getCardWithIndex(Hand*, unsigned int);
+
+extern int hand_isSet(Hand*);
+
+extern unsigned int hand_value(Hand*);
+
+extern char* card_toString(Card*);
 
 extern Deck* deck_new(unsigned int);
 

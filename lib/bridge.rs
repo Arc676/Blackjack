@@ -148,6 +148,51 @@ pub mod bridge {
 	}
 
 	#[no_mangle]
+	pub extern "C" fn player_handCount(ptr: *const Player) -> usize {
+		let player = unwrap!(ptr);
+		player.get_hand_count()
+	}
+
+	#[no_mangle]
+	pub extern "C" fn player_getHandWithIndex(ptr: *const Player, idx: usize) -> *const Hand {
+		let player = unwrap!(ptr);
+		wrap!(player.get_hand_at(idx))
+	}
+
+	#[no_mangle]
+	pub extern "C" fn hand_cardCount(ptr: *const Hand) -> usize {
+		let hand = unwrap!(ptr);
+		hand.get_card_count()
+	}
+
+	#[no_mangle]
+	pub extern "C" fn hand_getCardWithIndex(ptr: *const Hand, idx: usize) -> *const Card {
+		let hand = unwrap!(ptr);
+		wrap!(hand.get_card_at(idx))
+	}
+
+	#[no_mangle]
+	pub extern "C" fn hand_isSet(ptr: *const Hand) -> bool {
+		let hand = unwrap!(ptr);
+		hand.get_is_set()
+	}
+
+	#[no_mangle]
+	pub extern "C" fn hand_value(ptr: *const Hand) -> u32 {
+		let hand = unwrap!(ptr);
+		hand.value(false)
+	}
+
+	#[no_mangle]
+	pub extern "C" fn card_toString(ptr: *const Card) -> *mut c_char {
+		let card = unwrap!(ptr);
+		match CString::new(card.to_string()) {
+			Ok(s) => s.into_raw(),
+			Err(_) => ptr::null_mut()
+		}
+	}
+
+	#[no_mangle]
 	pub extern "C" fn deck_new(deck_count: usize) -> *mut Deck {
 		wrap!(Deck::new(deck_count))
 	}

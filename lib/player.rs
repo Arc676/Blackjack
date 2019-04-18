@@ -27,6 +27,7 @@ pub mod player {
 	}
 
 	#[no_mangle]
+	#[derive(Clone)]
 	pub struct Hand {
 		cards: Vec<Card>,
 		surrendered: bool,
@@ -52,6 +53,14 @@ pub mod player {
 
 		pub fn hand_iter(&self) -> Iter<Hand> {
 			self.hands.iter()
+		}
+
+		pub fn get_hand_count(&self) -> usize {
+			self.hands.len()
+		}
+
+		pub fn get_hand_at(&self, idx: usize) -> Hand {
+			self.hands[idx].clone()
 		}
 
 		pub fn get_name(&self) -> &str {
@@ -200,6 +209,14 @@ pub mod player {
 
 		pub fn card_iter(&self) -> Iter<Card> {
 			self.cards.iter()
+		}
+
+		pub fn get_card_count(&self) -> usize {
+			self.cards.len()
+		}
+
+		pub fn get_card_at(&self, idx: usize) -> Card {
+			self.cards[idx].clone()
 		}
 
 		pub fn set(&mut self) {
