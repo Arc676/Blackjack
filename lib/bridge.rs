@@ -43,31 +43,37 @@ pub mod bridge {
 		};
 	}
 
+	macro_rules! free_ptr {
+		($type:ident, $ptr:expr) => {
+			unsafe {
+				let _ = $type::from_raw($ptr);
+			}
+		};
+	}
+
 	#[no_mangle]
 	pub extern "C" fn rust_freestr(ptr: *mut c_char) {
-		unsafe {
-			let _ = CString::from_raw(ptr);
-		}
+		free_ptr!(CString, ptr);
 	}
 
 	#[no_mangle]
 	pub extern "C" fn rust_freeplayer(ptr: *mut Player) {
-		let _ = unwrap!(ptr);
+		free_ptr!(Box, ptr);
 	}
 
 	#[no_mangle]
 	pub extern "C" fn rust_freehand(ptr: *mut Hand) {
-		let _ = unwrap!(ptr);
+		free_ptr!(Box, ptr);
 	}
 
 	#[no_mangle]
 	pub extern "C" fn rust_freecard(ptr: *mut Card) {
-		let _ = unwrap!(ptr);
+		free_ptr!(Box, ptr);
 	}
 
 	#[no_mangle]
 	pub extern "C" fn rust_freedeck(ptr: *mut Deck) {
-		let _ = unwrap!(ptr);
+		free_ptr!(Box, ptr);
 	}
 
 	#[no_mangle]
