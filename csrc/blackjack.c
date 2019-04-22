@@ -33,11 +33,13 @@ void printPlayerHand(Player* player) {
 			Card* card = hand_getCardWithIndex(hand, ic);
 			char* c = card_toString(card);
 			printf("%s%s", ic ? ", " : "", c);
-			rust_free(c);
+			rust_freestr(c);
+			rust_freecard(card);
 		}
+		rust_freehand(hand);
 		printf("\n");
 	}
-	rust_free(name);
+	rust_freestr(name);
 }
 
 int main(int argc, char* argv[]) {
@@ -75,7 +77,7 @@ int main(int argc, char* argv[]) {
 			Player* player = *pplayer;
 			char* name = player_getName(player);
 			printf("%s: Enter wager for this hand: ", name);
-			rust_free(name);
+			rust_freestr(name);
 			fgets(input, sizeof(input), stdin);
 			int bet = (int)strtol(input, (char**)NULL, 0);
 			player_bet(player, bet, deck);
@@ -134,7 +136,7 @@ int main(int argc, char* argv[]) {
 			player_gameOver(player, dealerValue);
 			char* name = player_getName(player);
 			printf("%s's balance, standing: %d/%d\n", name,  player_getBalance(player), player_getStanding(player));
-			rust_free(name);
+			rust_freestr(name);
 		}
 		player_gameOver(dealer, 0);
 		printf("Play again? [Y/n]: ");
@@ -143,4 +145,12 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 	}
+
+	for (Player** pplayer = players; pplayer < players + playerCount; pplayer++) {
+		rust_freeplayer(*pplayer);
+	}
+	free(players);
+	rust_freeplayer(dealer);
+	rust_freedeck(deck);
+	return 0;
 }

@@ -17,12 +17,16 @@
 
 extern const int DIAMONDS, HEARTS, CLUBS, SPADES, SUIT, VALUE;
 
-extern void rust_free(char*);
-
 typedef struct Player Player;
 typedef struct Hand Hand;
 typedef struct Deck Deck;
 typedef struct Card Card;
+
+extern void rust_freestr(char*);
+extern void rust_freeplayer(Player*);
+extern void rust_freehand(Hand*);
+extern void rust_freecard(Card*);
+extern void rust_freedeck(Deck*);
 
 extern Player* player_new(char*, int, int);
 

@@ -44,10 +44,30 @@ pub mod bridge {
 	}
 
 	#[no_mangle]
-	pub extern "C" fn rust_free(ptr: *mut c_char) {
+	pub extern "C" fn rust_freestr(ptr: *mut c_char) {
 		unsafe {
 			let _ = CString::from_raw(ptr);
 		}
+	}
+
+	#[no_mangle]
+	pub extern "C" fn rust_freeplayer(ptr: *mut Player) {
+		let _ = unwrap!(ptr);
+	}
+
+	#[no_mangle]
+	pub extern "C" fn rust_freehand(ptr: *mut Hand) {
+		let _ = unwrap!(ptr);
+	}
+
+	#[no_mangle]
+	pub extern "C" fn rust_freecard(ptr: *mut Card) {
+		let _ = unwrap!(ptr);
+	}
+
+	#[no_mangle]
+	pub extern "C" fn rust_freedeck(ptr: *mut Deck) {
+		let _ = unwrap!(ptr);
 	}
 
 	#[no_mangle]
