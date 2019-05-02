@@ -70,6 +70,8 @@ extern unsigned int hand_value(Hand*);
 
 extern char* card_toString(Card*);
 
+extern unsigned int card_toU32(Card*);
+
 extern Deck* deck_new(unsigned int);
 
 extern void deck_shuffle(Deck*);

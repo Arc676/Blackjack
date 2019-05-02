@@ -101,8 +101,8 @@ pub mod player {
 		}
 
 		pub fn surrender(&mut self) {
-			self.get_playing_hand_mut().surrender();
 			self.lose(self.get_playing_hand().get_wager() / 2);
+			self.get_playing_hand_mut().surrender();
 		}
 
 		pub fn has_lost(&self) -> bool {
@@ -185,6 +185,9 @@ pub mod player {
 			}
 			let mut total_delta: i32 = 0;
 			for hand in &mut self.hands {
+				if hand.did_surrender() {
+					continue;
+				}
 				let value = hand.value(false);
 				let wager = hand.get_wager();
 				if value > dealer_value && !hand.lost() {
@@ -229,6 +232,11 @@ pub mod player {
 
 		pub fn surrender(&mut self) {
 			self.surrendered = true;
+			self.is_set = true;
+		}
+
+		pub fn did_surrender(&self) -> bool {
+			self.surrendered
 		}
 
 		pub fn lost(&self) -> bool {

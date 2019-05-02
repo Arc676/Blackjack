@@ -219,6 +219,12 @@ pub mod bridge {
 	}
 
 	#[no_mangle]
+	pub extern "C" fn card_toU32(ptr: *const Card) -> u32 {
+		let card = unwrap!(ptr);
+		card.to_u32()
+	}
+
+	#[no_mangle]
 	pub extern "C" fn deck_new(deck_count: usize) -> *mut Deck {
 		wrap!(Deck::new(deck_count))
 	}
