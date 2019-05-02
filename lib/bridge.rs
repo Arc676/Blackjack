@@ -141,10 +141,10 @@ pub mod bridge {
 	}
 
 	#[no_mangle]
-	pub extern "C" fn player_double(ptr: *mut Player, pdeck: *mut Deck) {
+	pub extern "C" fn player_double(ptr: *mut Player, pdeck: *mut Deck) -> bool {
 		let player = unwrap_mut!(ptr);
 		let mut deck = unwrap_mut!(pdeck);
-		player.double(&mut deck);
+		player.double(&mut deck)
 	}
 
 	#[no_mangle]

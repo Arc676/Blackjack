@@ -15,7 +15,19 @@
 #ifndef BLACKJACK_H
 #define BLACKJACK_H
 
-extern const int DIAMONDS, HEARTS, CLUBS, SPADES, SUIT, VALUE;
+/**
+ * Integer representations of card suits
+ */
+static const unsigned int DIAMONDS = 0b00010000;
+static const unsigned int HEARTS   = 0b00100000;
+static const unsigned int CLUBS    = 0b01000000;
+static const unsigned int SPADES   = 0b10000000;
+
+/**
+ * Bitwise filters for suit and value from integer representation of cards
+ */
+static const unsigned int SUIT     = 0b11110000;
+static const unsigned int VALUE    = 0b00001111;
 
 typedef struct Player Player;
 typedef struct Hand Hand;
@@ -28,56 +40,183 @@ extern void rust_freehand(Hand*);
 extern void rust_freecard(Card*);
 extern void rust_freedeck(Deck*);
 
-extern Player* player_new(char*, int, int);
+/**
+ * Create a new player
+ * @param name Player name
+ * @param isDealer Whether the player is the dealer
+ * @param balance Player's initial balance
+ * @return Newly constructed player
+ */
+extern Player* player_new(char* name, int isDealer, int balance);
 
-extern char* player_getName(Player*);
+/**
+ * Get a player's name
+ * @param player The player
+ * @return The player's name (must be freed by Rust)
+ */
+extern char* player_getName(Player* player);
 
-extern int player_getBalance(Player*);
+/**
+ * Get a player's balance
+ * @param player The player
+ * @return The player's current balance
+ */
+extern int player_getBalance(Player* player);
 
-extern int player_getStanding(Player*);
+/**
+ * Get a player's standing
+ * @param player The player
+ * @return The player's current standing
+ */
+extern int player_getStanding(Player* player);
 
-extern int player_isPlaying(Player*);
+/**
+ * Determine whether a player is still playing
+ * @param player The player
+ * @return Whether the player's turn is still in progress
+ */
+extern int player_isPlaying(Player* player);
 
-extern int player_hit(Player*, Deck*);
+/**
+ * Hit
+ * @param player The active player
+ * @param deck The deck from which to deal
+ * @return Whether the player busted
+ */
+extern int player_hit(Player* player, Deck* deck);
 
-extern void player_stand(Player*);
+/**
+ * Stand
+ * @param player The active player
+ */
+extern void player_stand(Player* player);
 
-extern void player_surrender(Player*);
+/**
+ * Surrender the current hand
+ * @param player The active player
+ */
+extern void player_surrender(Player* player);
 
-extern int player_split(Player*, Deck*);
+/**
+ * Split the player's hand
+ * @param player The active player
+ * @param deck The deck from which to deal
+ * @return Whether the hand can be split
+ */
+extern int player_split(Player* player, Deck* deck);
 
-extern void player_double(Player*, Deck*);
+/**
+ * Double down on the player's hand
+ * @param player The active player
+ * @param deck The deck from which to deal
+ * @return Whether the player busted
+ */
+extern int player_double(Player* player, Deck* deck);
 
-extern void player_bet(Player*, int, Deck*);
+/**
+ * Place a bet
+ * @param player The player placing the bet
+ * @param deck The deck from which to deal
+ */
+extern void player_bet(Player* player, int, Deck* deck);
 
-extern int player_hasLost(Player*);
+/**
+ * Determine whether a player has already lost
+ * @param player The player to check
+ * @return Whether the player has surrendered or busted all their hands
+ */
+extern int player_hasLost(Player* player);
 
-extern void player_gameOver(Player*, unsigned int);
+/**
+ * Settle all bets and discard all cards drawn this round
+ * @param player The player whose round is ending
+ * @param dealerValue The value of the dealer's hand
+ */
+extern void player_gameOver(Player* player, unsigned int dealerValue);
 
-extern unsigned int player_playAsDealer(Player*, Deck*);
+/**
+ * Play as the dealer
+ * @param player The dealer
+ * @param deck The deck from which to deal
+ * @return The value of the dealer's hand, or 0 if the dealer busted
+ */
+extern unsigned int player_playAsDealer(Player* player, Deck* deck);
 
-extern unsigned int player_handCount(Player*);
+/**
+ * Get the number of hands a player has
+ * @param player The player to check
+ * @return Number of hands being played by the player
+ */
+extern unsigned int player_handCount(Player* player);
 
-extern Hand* player_getHandWithIndex(Player*, unsigned int);
+/**
+ * Get a player's hand
+ * @param player The player with the desired hand
+ * @param idx The index of the desired hand
+ * @return The desired hand
+ */
+extern Hand* player_getHandWithIndex(Player* player, unsigned int idx);
 
-extern unsigned int hand_cardCount(Hand*);
+/**
+ * Get the number of cards in a hand
+ * @param hand Hand to check
+ * @return Number of cards in the hand
+ */
+extern unsigned int hand_cardCount(Hand* hand);
 
-extern Card* hand_getCardWithIndex(Hand*, unsigned int);
+/**
+ * Get a card in a player hand
+ * @param hand Hand containing the desired card
+ * @param idx Index of the desired card
+ * @return The desired card
+ */
+extern Card* hand_getCardWithIndex(Hand* hand, unsigned int idx);
 
-extern int hand_isSet(Hand*);
+/**
+ * Check whether a hand is set
+ * @param hand Hand to check
+ * @return Whether the hand is set
+ */
+extern int hand_isSet(Hand* hand);
 
-extern unsigned int hand_value(Hand*);
+/**
+ * Get the value of a hand
+ * @param hand Hand whose value to check
+ * @return Points the hand is worth
+ */
+extern unsigned int hand_value(Hand* hand);
 
-extern char* card_toString(Card*);
+/**
+ * Obtain the string representation of a card
+ * @param card Card to convert to string
+ * @return String representation of the card (must be freed by Rust)
+ */
+extern char* card_toString(Card* card);
 
-extern unsigned int card_toU32(Card*);
+/**
+ * Obtain the integer representation of a card
+ * @param card Card to convert to unsigned integer
+ * @return Integer representation of the card
+ */
+extern unsigned int card_toU32(Card* card);
 
-extern Deck* deck_new(unsigned int);
+/**
+ * Create a new set of decks
+ * @param count Number of decks
+ * @return Newly constructed Deck struct
+ */
+extern Deck* deck_new(unsigned int count);
 
-extern void deck_shuffle(Deck*);
+/**
+ * Shuffle a deck
+ * @param deck Deck to shuffle
+ */
+extern void deck_shuffle(Deck* deck);
 
-extern void deck_reset(Deck*);
-
-extern int deck_getNextCard(Deck*);
+/**
+ * Reset deck status
+ * @param deck Deck to reset
+ */
+extern void deck_reset(Deck* deck);
 
 #endif

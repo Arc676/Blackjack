@@ -42,23 +42,10 @@ pub mod card {
 		card_index: usize
 	}
 
-	#[no_mangle]
-	pub static DIAMONDS: u32 = 0b0001_0000;
-
-	#[no_mangle]
-	pub static HEARTS: u32   = 0b0010_0000;
-
-	#[no_mangle]
-	pub static CLUBS: u32    = 0b0100_0000;
-
-	#[no_mangle]
-	pub static SPADES: u32   = 0b1000_0000;
-
-	#[no_mangle]
-	pub static SUIT: u32     = 0b1111_0000;
-
-	#[no_mangle]
-	pub static VALUE: u32    = 0b0000_1111;
+	static DIAMONDS: u32 = 0b0001_0000;
+	static HEARTS: u32   = 0b0010_0000;
+	static CLUBS: u32    = 0b0100_0000;
+	static SPADES: u32   = 0b1000_0000;
 
 	impl Deck {
 		pub fn new(deck_count: usize) -> Deck {
