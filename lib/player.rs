@@ -138,11 +138,7 @@ pub mod player {
 
 		pub fn hit(&mut self, deck: &mut Deck) -> bool {
 			let hand = self.get_playing_hand_mut();
-			let busted = hand.hit(deck);
-			if busted {
-				hand.set();
-			}
-			busted
+			hand.hit(deck)
 		}
 
 		pub fn has_busted(&self) -> bool {
@@ -163,6 +159,7 @@ pub mod player {
 			while hand.value(false) < 17 {
 				hand.hit(&mut deck);
 			}
+			hand.set();
 			match self.has_busted() {
 				true => 0,
 				false => self.first_hand_value()
@@ -232,7 +229,7 @@ pub mod player {
 
 		pub fn surrender(&mut self) {
 			self.surrendered = true;
-			self.is_set = true;
+			self.set();
 		}
 
 		pub fn did_surrender(&self) -> bool {
@@ -258,13 +255,17 @@ pub mod player {
 
 		pub fn double_wager(&mut self, deck: &mut Deck) -> bool {
 			self.wager *= 2;
-			self.is_set = true;
+			self.set();
 			self.hit(deck)
 		}
 
 		pub fn hit(&mut self, deck: &mut Deck) -> bool {
 			self.cards.push(deck.next_card());
-			self.busted()
+			let ret = self.busted();
+			if ret {
+				self.set();
+			}
+			ret
 		}
 
 		pub fn busted(&self) -> bool {
