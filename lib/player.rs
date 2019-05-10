@@ -101,6 +101,14 @@ pub mod player {
 			self.hands[0].value(false)
 		}
 
+		pub fn can_surrender_hand(&self) -> bool {
+			self.get_playing_hand().can_surrender_hand()
+		}
+
+		pub fn can_split_hand(&self) -> bool {
+			self.get_playing_hand().can_split_hand()
+		}
+
 		pub fn surrender(&mut self) -> bool {
 			let loss = self.get_playing_hand().get_wager() / 2;
 			if self.get_playing_hand_mut().surrender() {
@@ -246,21 +254,27 @@ pub mod player {
 			self.surrendered
 		}
 
+		pub fn can_surrender_hand(&self) -> bool {
+			self.can_surrender
+		}
+
 		pub fn lost(&self) -> bool {
 			self.surrendered || self.busted()
 		}
 
 		pub fn split(&mut self, deck: &mut Deck) -> Option<Hand> {
-			if self.cards.len() == 2 {
-				if self.cards[0].score() == self.cards[1].score() {
-					let card = self.cards[1];
-					self.cards[1] = deck.next_card();
-					return Some(Hand {
-						cards: vec![card, deck.next_card()], can_surrender: true, surrendered: false, is_set: false, wager: self.wager
-					});
-				}
+			if self.can_split_hand() {
+				let card = self.cards[1];
+				self.cards[1] = deck.next_card();
+				return Some(Hand {
+					cards: vec![card, deck.next_card()], can_surrender: true, surrendered: false, is_set: false, wager: self.wager
+				});
 			}
 			None
+		}
+
+		pub fn can_split_hand(&self) -> bool {
+			self.cards.len() == 2 && self.cards[0].score() == self.cards[1].score()
 		}
 
 		pub fn double_wager(&mut self, deck: &mut Deck) -> bool {

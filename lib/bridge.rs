@@ -186,6 +186,18 @@ pub mod bridge {
 	}
 
 	#[no_mangle]
+	pub extern "C" fn player_canSurrenderCurrentHand(ptr: *const Player) -> bool {
+		let player = unwrap!(ptr);
+		player.can_surrender_hand()
+	}
+
+	#[no_mangle]
+	pub extern "C" fn player_canSplitHand(ptr: *const Player) -> bool {
+		let player = unwrap!(ptr);
+		player.can_split_hand()
+	}
+
+	#[no_mangle]
 	pub extern "C" fn hand_cardCount(ptr: *const Hand) -> usize {
 		let hand = unwrap!(ptr);
 		hand.get_card_count()
