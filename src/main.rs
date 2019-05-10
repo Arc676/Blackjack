@@ -72,7 +72,11 @@ fn main() {
 		io::stdout().flush().expect("Failed to flush");
 		io::stdin().read_line(&mut name).expect("Failed to read");
 		name.truncate(name.len() - 1);
-		let initial_balance = get_int("Enter player's initial balance: ");
+		let mut initial_balance = get_int("Enter player's initial balance: ");
+		if initial_balance <= 0 {
+			println!("Can't be negative. Defaulting to 1000.");
+			initial_balance = 1000;
+		}
 		let player = Player::new(name, false, initial_balance);
 		players.push(player);
 	}
@@ -82,7 +86,14 @@ fn main() {
 	loop {
 		deck.reset();
 		for player in players.iter_mut() {
-			let bet = get_int(&format!("{}: Enter wager for this hand: ", player.get_name()));
+			let bet = loop {
+				let input = get_int(&format!("{}: Enter wager for this hand: ", player.get_name()));
+				if input <= 0 || input > player.get_balance() {
+					println!("Bet must be between 1 and your balance, {}", player.get_balance());
+				} else {
+					break input;
+				}
+			};
 			player.bet(bet, &mut deck);
 		}
 		dealer.bet(0, &mut deck);
