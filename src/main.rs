@@ -107,7 +107,9 @@ fn main() {
 							}
 						},
 						"surrender" => {
-							player.surrender();
+							if !player.surrender() {
+								println!("Can't surrender this hand now.");
+							}
 						},
 						"split" => {
 							if player.split(&mut deck) {

@@ -128,7 +128,7 @@ pub mod bridge {
 	}
 
 	#[no_mangle]
-	pub extern "C" fn player_surrender(ptr: *mut Player) {
+	pub extern "C" fn player_surrender(ptr: *mut Player) -> bool {
 		let player = unwrap_mut!(ptr);
 		player.surrender()
 	}

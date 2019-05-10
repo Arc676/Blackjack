@@ -30,6 +30,7 @@ pub mod player {
 	#[derive(Clone)]
 	pub struct Hand {
 		cards: Vec<Card>,
+		can_surrender: bool,
 		surrendered: bool,
 		is_set: bool,
 		wager: i32
@@ -100,9 +101,13 @@ pub mod player {
 			self.hands[0].value(false)
 		}
 
-		pub fn surrender(&mut self) {
-			self.lose(self.get_playing_hand().get_wager() / 2);
-			self.get_playing_hand_mut().surrender();
+		pub fn surrender(&mut self) -> bool {
+			let loss = self.get_playing_hand().get_wager() / 2;
+			if self.get_playing_hand_mut().surrender() {
+				self.lose(loss);
+				return true;
+			}
+			false
 		}
 
 		pub fn has_lost(&self) -> bool {
@@ -200,7 +205,7 @@ pub mod player {
 
 	impl Hand {
 		pub fn new(wager: i32, deck: &mut Deck) -> Hand {
-			let mut hand = Hand { cards: Vec::with_capacity(11), surrendered: false, is_set: false, wager };
+			let mut hand = Hand { cards: Vec::with_capacity(11), can_surrender: true, surrendered: false, is_set: false, wager };
 			for _ in 0..2 {
 				hand.cards.push(deck.next_card())
 			}
@@ -221,15 +226,20 @@ pub mod player {
 
 		pub fn set(&mut self) {
 			self.is_set = true;
+			self.can_surrender = false;
 		}
 
 		pub fn get_is_set(&self) -> bool {
 			self.is_set
 		}
 
-		pub fn surrender(&mut self) {
-			self.surrendered = true;
-			self.set();
+		pub fn surrender(&mut self) -> bool {
+			if self.can_surrender {
+				self.surrendered = true;
+				self.set();
+				return true;
+			}
+			false
 		}
 
 		pub fn did_surrender(&self) -> bool {
@@ -246,7 +256,7 @@ pub mod player {
 					let card = self.cards[1];
 					self.cards[1] = deck.next_card();
 					return Some(Hand {
-						cards: vec![card, deck.next_card()], surrendered: false, is_set: false, wager: self.wager
+						cards: vec![card, deck.next_card()], can_surrender: true, surrendered: false, is_set: false, wager: self.wager
 					});
 				}
 			}
@@ -265,6 +275,7 @@ pub mod player {
 			if ret {
 				self.set();
 			}
+			self.can_surrender = false;
 			ret
 		}
 

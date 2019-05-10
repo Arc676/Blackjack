@@ -94,8 +94,9 @@ extern void player_stand(Player* player);
 /**
  * Surrender the current hand
  * @param player The active player
+ * @return Whether the current hand can be surrendered
  */
-extern void player_surrender(Player* player);
+extern int player_surrender(Player* player);
 
 /**
  * Split the player's hand
