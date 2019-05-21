@@ -14,6 +14,7 @@
 
 use std::io;
 use std::io::Write;
+use std::process;
 
 extern crate blackjack;
 use blackjack::card::card::*;
@@ -62,9 +63,14 @@ fn main() {
 	println!("Blackjack!");
 
 	let deck_count = get_int("How many decks? ") as usize;
-	let mut deck = Deck::new(deck_count);
-
 	let player_count = get_int("How many players? ") as usize;
+
+	if (player_count + 1) * 5 >= deck_count * 52 {
+		println!("You need more decks to be able to play with this many players or the card supply might be exhausted.");
+		process::exit(1);
+	}
+
+	let mut deck = Deck::new(deck_count);
 	let mut players: Vec<Player> = Vec::with_capacity(player_count);
 	for _ in 0..player_count {
 		let mut name = String::new();

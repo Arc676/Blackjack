@@ -8,7 +8,6 @@ homepage = "https://arc676.github.io/projects/blackjack.html"
 repository = "https://github.com/Arc676/Blackjack"
 readme = "README.md"
 license = "GPL-3.0-only"
-license-file = "LICENSE"
 exclude = ["csrc/*", "include/*", "target/*"]
 keywords = ["blackjack", "casino", "card", "gambling", "library"]
 categories = ["game-engines"]
