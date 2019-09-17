@@ -77,13 +77,12 @@ fn main() {
 		print!("Enter your name: ");
 		io::stdout().flush().expect("Failed to flush");
 		io::stdin().read_line(&mut name).expect("Failed to read");
-		name.truncate(name.len() - 1);
 		let mut initial_balance = get_int("Enter player's initial balance: ");
 		if initial_balance <= 0 {
 			println!("Can't be negative. Defaulting to 1000.");
 			initial_balance = 1000;
 		}
-		let player = Player::new(name, false, initial_balance);
+		let player = Player::new(name.trim_end().to_string(), false, initial_balance);
 		players.push(player);
 	}
 
